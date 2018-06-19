@@ -93,6 +93,14 @@ class MySqlHook(DbApiHook):
         conn = MySQLdb.connect(**conn_config)
         return conn
 
+    @staticmethod
+    def _build_insert_rows_replace_sql(table, target_fields, values):
+        placeholders = ["%s", ] * len(values)
+        return "REPLACE INTO {0} {1} VALUES ({2})".format(
+            table,
+            target_fields,
+            ",".join(placeholders))
+
     def bulk_load(self, table, tmp_file):
         """
         Loads a tab-delimited file into a database table

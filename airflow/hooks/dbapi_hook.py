@@ -205,6 +205,18 @@ class DbApiHook(BaseHook):
         """
         return self.get_conn().cursor()
 
+    @staticmethod
+    def _build_insert_rows_insert_sql(table, target_fields, values):
+        placeholders = ["%s", ] * len(values)
+        return "INSERT INTO {0} {1} VALUES ({2})".format(
+                        table,
+                        target_fields,
+                        ",".join(placeholders))
+
+    @staticmethod
+    def _build_insert_rows_replace_sql(table, target_fields, values):
+        raise NotImplementedError()
+
     def insert_rows(self, table, rows, target_fields=None, commit_every=1000,
                     replace=False):
         """
@@ -241,15 +253,12 @@ class DbApiHook(BaseHook):
                     for cell in row:
                         lst.append(self._serialize_cell(cell, conn))
                     values = tuple(lst)
-                    placeholders = ["%s", ] * len(values)
                     if not replace:
-                        sql = "INSERT INTO "
+                        sql = self._build_insert_rows_insert_sql(
+                            table, target_fields, values)
                     else:
-                        sql = "REPLACE INTO "
-                    sql += "{0} {1} VALUES ({2})".format(
-                        table,
-                        target_fields,
-                        ",".join(placeholders))
+                        sql = self._build_insert_rows_replace_sql(
+                            table, target_fields, values)
                     cur.execute(sql, values)
                     if commit_every and i % commit_every == 0:
                         conn.commit()

@@ -102,17 +102,8 @@ class TestDbApiHook(unittest.TestCase):
         rows = [("hello",),
                 ("world",)]
 
-        self.db_hook.insert_rows(table, rows, replace=True)
-
-        self.conn.close.assert_called_once()
-        self.cur.close.assert_called_once()
-
-        commit_count = 2  # The first and last commit
-        self.assertEqual(commit_count, self.conn.commit.call_count)
-
-        sql = "REPLACE INTO {}  VALUES (%s)".format(table)
-        for row in rows:
-            self.cur.execute.assert_any_call(sql, row)
+        with self.assertRaises(NotImplementedError):
+            self.db_hook.insert_rows(table, rows, replace=True)
 
     def test_insert_rows_target_fields(self):
         table = "table"
